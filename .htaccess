@@ -1,0 +1,22 @@
+# Nyalakan Mesin Rewrite
+RewriteEngine On
+
+# Tentukan Base URL (sesuaikan dengan nama folder XAMPP kamu)
+RewriteBase /klinik-dikri/
+
+# ATURAN 1: Hapus "index.php" secara paksa
+# Jika user ngetik ".../folder/index.php", redirect ke ".../folder/"
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s(.*)/index\.php [NC]
+RewriteRule ^(.*)/index\.php$ $1 [R=301,L]
+
+# ATURAN 2: Hapus ekstensi ".php" secara paksa
+# Jika user ngetik ".../file.php", redirect ke ".../file"
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ %1 [R=301,L]
+
+# ATURAN 3: Sembunyikan ".php" (Internal Rewrite)
+# Jika user ngetik ".../file", server diam-diam cari ".../file.php"
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L]

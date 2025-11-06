@@ -1,0 +1,105 @@
+
+        /* --- CSS Khusus Untuk Print --- */
+        @page {
+            size: A4;
+            margin: 0; /* Hapus margin default browser */
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif; 
+            margin: 0;
+            padding: 1.5cm 1.5cm 1cm 1.5cm; /* (atas, kanan, bawah, kiri) */
+            line-height: 1.6;
+            font-size: 12pt;
+            color: #000;
+        }
+        @media print {
+            body {
+                padding: 1.5cm 1.5cm 1cm 1.5cm;
+            }
+        }
+        /* --- Akhir CSS Khusus Print --- */
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 18pt;
+            text-transform: uppercase;
+        }
+        .header p {
+            margin: 0;
+            font-size: 10pt;
+        }
+        .section-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #aaa;
+            padding-bottom: 5px;
+        }
+        table.info-pasien {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table.info-pasien td {
+            padding: 2px 0;
+            vertical-align: top;
+            font-size: 11pt;
+        }
+        .info-label {
+            width: 130px; 
+            display: inline-block;
+            font-weight: bold;
+        }
+        
+        /* === INI CSS BARU UNTUK TABEL HASIL === */
+        table.hasil-pemeriksaan {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000; /* Garis luar tabel */
+        }
+        table.hasil-pemeriksaan td {
+            padding: 8px 12px;
+            border: 1px solid #000; /* Garis dalam tabel */
+            vertical-align: top;
+        }
+        table.hasil-pemeriksaan td.label-tabel {
+            width: 30%; /* Lebar kolom label kiri */
+            font-weight: bold;
+            background-color: #f9f9f9; /* Latar abu-abu untuk label */
+        }
+        table.hasil-pemeriksaan td.content-tabel {
+            width: 70%;
+            white-space: pre-wrap; /* Biar resepnya bisa ganti baris */
+        }
+        /* === AKHIR CSS BARU === */
+        
+        .signature {
+            margin-top: 40px;
+            width: 300px;
+            float: right;
+            text-align: center;
+            font-size: 11pt;
+        }
+        .signature .date {
+            margin-bottom: 5px;
+        }
+        .signature .name {
+            margin-top: 60px; /* Ruang untuk TTD */
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .signature .sip {
+            font-size: 10pt;
+            margin-top: -5px;
+        }
