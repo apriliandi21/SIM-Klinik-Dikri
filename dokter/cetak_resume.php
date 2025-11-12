@@ -4,17 +4,14 @@
 | Halaman Cetak Resume Medis (dokter/cetak_resume.php)
 |--------------------------------------------------------------------------
 |
-| VERSI RAPIH & PROFESSIONAL (FIXED + TABEL HASIL)
-|
-| 1. Panggil config.php
-| 2. Logika PHP: Ambil ID Rekam Medis, JOIN ke semua tabel (termasuk berat_badan).
-| 3. Tampilan HTML & CSS: (FIX: Hasil pemeriksaan pakai TABEL).
+| (FIXED: Favicon, Layout Tabel Resep, dan Resep Digital dari tbl_resep_detail)
 |
 */
 
 require_once '../config/config.php';
 
 $rekam_medis_data = null;
+$resep_data = []; // (BARU) Array untuk nampung resep
 $error_msg = '';
 
 // Pastikan ada ID rekam medis di URL
@@ -22,12 +19,12 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $id_rekam_medis = (int)$_GET['id'];
 
     try {
-        // Query untuk mengambil semua data terkait rekam medis ini
+        // Query 1: Ambil data rekam medis utama
         $sql = "SELECT 
                     rm.tgl_pemeriksaan, 
                     rm.diagnosa, 
                     rm.tindakan, 
-                    rm.catatan_dokter,
+                    rm.catatan_dokter, -- Ini adalah Catatan Tambahan (Non-Resep)
                     p.no_rekam_medis, 
                     p.nm_pasien, 
                     p.tgl_lahir,
@@ -52,6 +49,24 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
         if (!$rekam_medis_data) {
             $error_msg = "Data rekam medis tidak ditemukan.";
+        } else {
+            // === LANGKAH BARU: Ambil data resep digital ===
+            $sql_resep = "SELECT 
+                            o.nama_obat, 
+                            o.dosis_per_unit,
+                            rd.jumlah_diberikan,
+                            rd.aturan_pakai
+                          FROM 
+                            tb_resep_detail AS rd
+                          JOIN 
+                            tb_obat AS o ON rd.id_obat = o.id_obat
+                          WHERE 
+                            rd.id_rm = ?";
+            
+            $stmt_resep = $pdo->prepare($sql_resep);
+            $stmt_resep->execute([$id_rekam_medis]);
+            $resep_data = $stmt_resep->fetchAll(PDO::FETCH_ASSOC);
+            // === AKHIR LANGKAH BARU ===
         }
 
     } catch (PDOException $e) {
@@ -79,9 +94,12 @@ if ($error_msg) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Resume Medis - ...</title>
-     <link rel="icon" type="image/png" href="/klinik-dikri/assets/image/favicon1.png">
+    <title>Cetak Resume Medis - <?php echo htmlspecialchars($rekam_medis_data['nm_pasien'] ?? 'Pasien'); ?></title>
+    
+    
+    <link rel="icon" type="image/png" href="/klinik-dikri/assets/image/favicon1.png">
     <link rel="apple-touch-icon" href="/klinik-dikri/assets/image/apple-touch-icon.png">
+    
     <link rel="stylesheet" href="../assets/css/print.css">
     
 </head>
@@ -89,13 +107,13 @@ if ($error_msg) {
     <div class="container">
         
         <div class="header">
-    <h1><?php echo NAMA_KLINIK; ?></h1>
-    <p>
-        <?php echo ALAMAT_KLINIK; ?> | 
-        Telp: <?php echo TELPON_KLINIK; ?> | 
-        Email: <?php echo EMAIL_KLINIK; ?>
-    </p>
-</div>
+            <h1><?php echo NAMA_KLINIK; ?></h1>
+            <p>
+                <?php echo ALAMAT_KLINIK; ?> | 
+                Telp: <?php echo TELPON_KLINIK; ?> | 
+                Email: <?php echo EMAIL_KLINIK; ?>
+            </p>
+        </div>
 
         <div class="section-title">Resume Hasil Pemeriksaan</div>
 
@@ -146,11 +164,42 @@ if ($error_msg) {
                 <td class="label-tabel">Tindakan</td>
                 <td class="content-tabel"><?php echo nl2br(htmlspecialchars($rekam_medis_data['tindakan'])); ?></td>
             </tr>
-            <tr>
-                <td class="label-tabel">Resep / Catatan</td>
-                <td class="content-tabel"><?php echo nl2br(htmlspecialchars($rekam_medis_data['catatan_dokter'])); ?></td>
-            </tr>
         </table>
+
+        <div class="section-title" style="margin-top: 15px;">Resep Obat</div>
+        <table class="hasil-pemeriksaan">
+            <thead style="background-color: #f9f9f9;">
+                <tr>
+                    <th style="width: 35%; padding: 8px 12px; border: 1px solid #000;">Nama Obat (Dosis)</th>
+                    <th style="width: 10%; padding: 8px 12px; border: 1px solid #000; text-align: center;">Jumlah</th>
+                    <th style="width: 55%; padding: 8px 12px; border: 1px solid #000;">Aturan Pakai</th>
+                    </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($resep_data)): ?>
+                    <?php foreach ($resep_data as $resep): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($resep['nama_obat'] . ' (' . $resep['dosis_per_unit'] . ')'); ?></td>
+                            <td style="text-align: center;"><?php echo htmlspecialchars($resep['jumlah_diberikan']); ?></td>
+                            <td><?php echo htmlspecialchars($resep['aturan_pakai']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="3" style="text-align: center;">- Tidak ada resep obat -</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        
+        <?php if (!empty($rekam_medis_data['catatan_dokter'])): ?>
+            <div class="section-title" style="margin-top: 15px;">Catatan Tambahan</div>
+            <div class="content-box" style="border: 1px solid #ccc; padding: 10px; font-size: 11pt;">
+                <?php echo nl2br(htmlspecialchars($rekam_medis_data['catatan_dokter'])); ?>
+            </div>
+        <?php endif; ?>
+        
+        
         <div class="signature">
             <div class="date">Sukabumi, <?php echo date('d F Y'); ?></div>
             <div class="position">Dokter Pemeriksa,</div>

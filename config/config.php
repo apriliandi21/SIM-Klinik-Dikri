@@ -10,6 +10,12 @@
 | 4. Memulai Session
 |
 */
+// =============================================
+// PENGATURAN DEBUGGING (UNTUK MENCARI ERROR)
+// =============================================
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // 1. Setting Waktu (Timezone)
 // Ini penting agar semua fungsi tanggal & waktu di PHP sesuai Waktu Indonesia Barat

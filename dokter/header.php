@@ -28,6 +28,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'dokter') {
     
     <link rel="icon" type="image/png" href="/klinik-dikri/assets/image/favicon1.png">
     <link rel="apple-touch-icon" href="/klinik-dikri/assets/image/apple-touch-icon.png">
+    <link rel="stylesheet" href="/klinik-dikri/assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
     
     <link rel="stylesheet" href="../assets/css/style.css"> 

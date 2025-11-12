@@ -22,6 +22,9 @@ if (isset($_SESSION['role'])) {
     } else if ($_SESSION['role'] == 'dokter') {
         header("Location: /klinik-dikri/dokter/");
         exit;
+    } else if ($_SESSION['role'] == 'admin') { // <-- TAMBAHAN BARU
+        header("Location: /klinik-dikri/admin/");
+        exit;
     }
 }
 
@@ -37,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_msg = "Username dan password tidak boleh kosong!";
     } else {
         try {
-            $sql = "SELECT * FROM tb_user WHERE username = ?";
+            $sql = "SELECT * FROM tb_user WHERE username = ? AND status_akun = 'aktif'";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -55,6 +58,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $_SESSION['no_sip'] = $user['no_sip'];
                     header("Location: /klinik-dikri/dokter/");
                     exit;
+                } else if ($user['role'] == 'admin') { // <-- TAMBAHAN BARU
+                    header("Location: /klinik-dikri/admin/");
+                    exit;
+                    
                 }
 
             } else {

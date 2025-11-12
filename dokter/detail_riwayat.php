@@ -4,12 +4,15 @@
 | Halaman Detail Riwayat (dokter/detail_riwayat.php)
 |--------------------------------------------------------------------------
 |
-| VERSI BOOTSTRAP LENGKAP (PHP + HTML FINAL + TOMBOL CETAK ULANG)
+| (FIXED: Menampilkan Resep Digital di setiap item riwayat)
 |
 | 1. Panggil header.php
-| 2. Logika PHP (FIX: Query riwayat di-update untuk ambil id_rekam_medis)
-| 3. Tampilan HTML (FIX: Tabel riwayat ditambah kolom Aksi)
-| 4. Panggil footer.php
+| 2. Query 1: Ambil data pasien
+| 3. Query 2: Ambil data rekam medis (riwayat kunjungan)
+| 4. Query 3 (BARU): Ambil SEMUA data resep digital untuk pasien ini
+| 5. Olah data resep (kelompokkan)
+| 6. Tampilkan HTML (Info Pasien, Tabel Riwayat + Tabel Resep di dalemnya)
+| 7. Panggil footer.php
 |
 */
 
@@ -19,9 +22,10 @@ include 'header.php';
 // 2. Siapkan variabel
 $pasien_info = null;
 $riwayat_medis = [];
+$resep_grouped = []; // (BARU) Array untuk nampung resep yang dikelompokkan
 $error_msg = '';
 
-// 3. Cek apakah ada 'id' di URL (Logika PHP ini sudah benar)
+// 3. Cek apakah ada 'id' di URL
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     
     $id_pasien = (int)$_GET['id'];
@@ -35,10 +39,9 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
         if ($pasien_info) {
             
-            // Query 2: Ambil SEMUA riwayat medis pasien ini
-            // (FIX: TAMBAHKAN rm.id_rekam_medis)
+            // Query 2: Ambil SEMUA riwayat medis pasien ini (Kunjungan)
             $sql_riwayat = "SELECT 
-                                rm.id_rekam_medis, -- <-- INI TAMBAHAN PENTING
+                                rm.id_rekam_medis, 
                                 rm.diagnosa, 
                                 rm.tindakan, 
                                 rm.catatan_dokter,
@@ -53,11 +56,40 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                             WHERE 
                                 p.id_pasien = ?
                             ORDER BY 
-                                rm.tgl_pemeriksaan DESC"; // Riwayat terbaru di atas
+                                rm.tgl_pemeriksaan DESC";
             
             $stmt_riwayat = $pdo->prepare($sql_riwayat);
             $stmt_riwayat->execute([$id_pasien]);
             $riwayat_medis = $stmt_riwayat->fetchAll(PDO::FETCH_ASSOC);
+
+            // --- INI LANGKAH BARU ---
+            // Query 3: Ambil SEMUA resep digital untuk pasien ini
+            $sql_resep = "SELECT 
+                            rd.id_rm, -- (PENTING untuk mengelompokkan)
+                            o.nama_obat, 
+                            o.dosis_per_unit,
+                            rd.jumlah_diberikan,
+                            rd.aturan_pakai
+                          FROM 
+                            tb_resep_detail AS rd
+                          JOIN 
+                            tb_obat AS o ON rd.id_obat = o.id_obat
+                          JOIN
+                            tb_rekam_medis AS rm ON rd.id_rm = rm.id_rekam_medis
+                          JOIN
+                            tb_pendaftaran AS p ON rm.id_pendaftaran = p.id_pendaftaran
+                          WHERE 
+                            p.id_pasien = ?";
+            
+            $stmt_resep = $pdo->prepare($sql_resep);
+            $stmt_resep->execute([$id_pasien]);
+            $resep_data = $stmt_resep->fetchAll(PDO::FETCH_ASSOC);
+
+            // 5. Olah data resep (Kelompokkan berdasarkan id_rm)
+            foreach ($resep_data as $resep) {
+                $resep_grouped[$resep['id_rm']][] = $resep;
+            }
+            // --- AKHIR LANGKAH BARU ---
             
         } else {
             $error_msg = "Data pasien tidak ditemukan.";
@@ -145,7 +177,7 @@ if ($pasien_info):
     </div>
     
     
-    <div class.="card shadow-sm border-0 mt-4">
+    <div class="card shadow-sm border-0 mt-4">
         <div class="card-header bg-white py-3">
             <h6 class="m-0 fw-bold">Semua Riwayat Kunjungan</h6>
         </div>
@@ -155,10 +187,9 @@ if ($pasien_info):
                     <tr>
                         <th style="width: 15%;">Tanggal Kunjungan</th>
                         <th style="width: 15%;">Dokter</th>
-                        <th>Diagnosa</th>
-                        <th>Tindakan</th>
-                        <th>Catatan / Resep</th>
-                        <th style="width: 10%;">Aksi</th> </tr>
+                        <th>Diagnosa & Tindakan</th>
+                        <th>Resep Digital</th> <th>Catatan Tambahan</th> <th style="width: 10%;">Aksi</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($riwayat_medis)): ?>
@@ -166,15 +197,40 @@ if ($pasien_info):
                             <tr>
                                 <td><?php echo date('d M Y, H:i', strtotime($riwayat['tgl_pemeriksaan'])); ?></td>
                                 <td><?php echo htmlspecialchars($riwayat['nama_dokter']); ?></td>
-                                <td><?php echo nl2br(htmlspecialchars($riwayat['diagnosa'])); ?></td>
-                                <td><?php echo nl2br(htmlspecialchars($riwayat['tindakan'])); ?></td>
+                                <td>
+                                    <strong class="d-block">Diagnosa:</strong>
+                                    <p class="mb-2"><?php echo nl2br(htmlspecialchars($riwayat['diagnosa'])); ?></p>
+                                    <strong class="d-block">Tindakan:</strong>
+                                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($riwayat['tindakan'])); ?></p>
+                                </td>
+                                
+                                <td style="font-size: 0.9em;">
+                                    <?php 
+                                    // Ambil ID rekam medis saat ini
+                                    $current_rm_id = $riwayat['id_rekam_medis'];
+                                    
+                                    // Cek apakah ada resep untuk ID ini di array $resep_grouped
+                                    if (isset($resep_grouped[$current_rm_id]) && !empty($resep_grouped[$current_rm_id])): 
+                                    ?>
+                                        <ul class="list-unstyled mb-0">
+                                            <?php foreach ($resep_grouped[$current_rm_id] as $resep_item): ?>
+                                                <li class="mb-2">
+                                                    <strong>• <?php echo htmlspecialchars($resep_item['nama_obat']); ?></strong>
+                                                    (<?php echo htmlspecialchars($resep_item['jumlah_diberikan']); ?> / <?php echo htmlspecialchars($resep_item['aturan_pakai']); ?>)
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php else: ?>
+                                        <span class="text-muted">- Tidak ada -</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?php echo nl2br(htmlspecialchars($riwayat['catatan_dokter'])); ?></td>
                                 
                                 <td>
                                     <a href="cetak_resume?id=<?php echo $riwayat['id_rekam_medis']; ?>" 
                                        target="_blank" 
                                        class="btn btn-primary btn-sm w-100">
-                                        Cetak Ulang
+                                        <i class="fas fa-print"></i> Cetak Ulang
                                     </a>
                                 </td>
                                 
