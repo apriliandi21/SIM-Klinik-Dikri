@@ -51,16 +51,16 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'dokter') {
       <ul class="navbar-nav me-auto">
       </ul>
       
-      <ul class="navbar-nav">
+      <ul class="navbar-nav px-3 pb-3 pb-lg-0">
         <li class="nav-item">
           <a class="nav-link" href="/klinik-dikri/dokter/">Antrean Pasien</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/klinik-dikri/dokter/riwayat_pasien">Riwayat Pasien</a>
         </li>
-         <li class="nav-item ms-3">
-           <a href="/klinik-dikri/logout" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin logout?');">
-               Logout
+         
+         <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+           <a href="/klinik-dikri/logout" class="btn btn-danger w-100" onclick="return confirm('Apakah Anda yakin ingin logout?');"> Logout
            </a>
          </li>
       </ul>
