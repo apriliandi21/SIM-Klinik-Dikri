@@ -34,34 +34,34 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') {
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="#"> SIM KLINIK (Admin)
+    <a class="navbar-brand fw-bold" href="/klinik-dikri/admin/">
+        SIM KLINIK (ADMIN)
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
+    
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
-        </ul>
+      </ul>
       
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link active" href="./">Dashboard</a>
+          <a class="nav-link" href="/klinik-dikri/admin/">Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="data_obat">Data Obat</a>
+          <a class="nav-link" href="/klinik-dikri/admin/data_obat">Data Obat</a> 
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manajemen_user">Manajemen User</a>
+          <a class="nav-link" href="/klinik-dikri/admin/manajemen_user">Manajemen User</a> 
         </li>
-        
-         <li class="nav-item ms-3"> <a href="../logout" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin logout?');">
+         <li class="nav-item ms-3">
+           <a href="/klinik-dikri/logout" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin logout?');">
                Logout
            </a>
          </li>
       </ul>
-    </div>
-    </div>
-  </div>
+    </div> </div>
 </nav>
 
 <div class="container mt-4"> <div class="row">
