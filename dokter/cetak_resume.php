@@ -57,11 +57,11 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                             rd.jumlah_diberikan,
                             rd.aturan_pakai
                           FROM 
-                            tb_resep_detail AS rd
+                            tb_detail_obat AS rd
                           JOIN 
                             tb_obat AS o ON rd.id_obat = o.id_obat
                           WHERE 
-                            rd.id_rm = ?";
+                            rd.id_rekam_medis = ?";
             
             $stmt_resep = $pdo->prepare($sql_resep);
             $stmt_resep->execute([$id_rekam_medis]);

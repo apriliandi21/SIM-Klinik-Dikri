@@ -79,8 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt_update_pendaftaran->execute([$id_pendaftaran]);
 
             // Aksi 3 & 4: LOOPING & INSERT RESEP + UPDATE STOK
-            $sql_insert_resep = "INSERT INTO tb_resep_detail 
-                                 (id_rm, id_obat, jumlah_diberikan, aturan_pakai) 
+            $sql_insert_resep = "INSERT INTO tb_detail_obat 
+                                 (id_rekam_medis, id_obat, jumlah_diberikan, aturan_pakai) 
                                  VALUES (?, ?, ?, ?)";
             $stmt_insert_resep = $pdo->prepare($sql_insert_resep);
 

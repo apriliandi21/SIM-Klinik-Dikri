@@ -65,17 +65,17 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
             // --- INI LANGKAH BARU ---
             // Query 3: Ambil SEMUA resep digital untuk pasien ini
             $sql_resep = "SELECT 
-                            rd.id_rm, -- (PENTING untuk mengelompokkan)
+                            rd.id_rekam_medis, -- (PENTING untuk mengelompokkan)
                             o.nama_obat, 
                             o.dosis_per_unit,
                             rd.jumlah_diberikan,
                             rd.aturan_pakai
                           FROM 
-                            tb_resep_detail AS rd
+                            tb_detail_obat AS rd
                           JOIN 
                             tb_obat AS o ON rd.id_obat = o.id_obat
                           JOIN
-                            tb_rekam_medis AS rm ON rd.id_rm = rm.id_rekam_medis
+                            tb_rekam_medis AS rm ON rd.id_rekam_medis = rm.id_rekam_medis
                           JOIN
                             tb_pendaftaran AS p ON rm.id_pendaftaran = p.id_pendaftaran
                           WHERE 
@@ -85,9 +85,9 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
             $stmt_resep->execute([$id_pasien]);
             $resep_data = $stmt_resep->fetchAll(PDO::FETCH_ASSOC);
 
-            // 5. Olah data resep (Kelompokkan berdasarkan id_rm)
+            // 5. Olah data resep (Kelompokkan berdasarkan id_rekam_medis)
             foreach ($resep_data as $resep) {
-                $resep_grouped[$resep['id_rm']][] = $resep;
+                $resep_grouped[$resep['id_rekam_medis']][] = $resep;
             }
             // --- AKHIR LANGKAH BARU ---
             
